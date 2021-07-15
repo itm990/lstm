@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import configparser
+
+from argparse import ArgumentParser
 from torch.utils.data import DataLoader
 import dataset
 from tqdm import tqdm
@@ -80,20 +81,21 @@ def train(EOS, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion
 def main():
 
     # パラメータの設定
-    inifile = configparser.ConfigParser()
-    inifile.read('./params_config.ini', 'UTF-8')
-    batch_size = int(inifile.get('params', 'batch_size'))
-    hidden_size = int(inifile.get('params', 'hidden_size'))
-    learning_rate = float(inifile.get('params', 'learning_rate'))
-    epoch_max = int(inifile.get('params', 'epoch_size'))
+    parser = ArgumentParser()
+    parser.add_argument("--batch_size", type=int, default=50)
+    parser.add_argument("--data_path", type=str, default="/home/ikawa/tutorial/seq2seq/corpus/ASPEC-JE/corpus.tok/20000.dict")
+    parser.add_argument("--epoch_size", type=int, default=20)
+    parser.add_argument("--hidden_size", type=int, default=256)
+    parser.add_argument("--learning_rate", type=float, default=0.01)
+    parser.add_argument("--model_name", type=str, default="model")
+    args = parser.parse_args()    
 
     # デバイスの設定
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('device:', device)
     
     # データのロード
-    data_path = '/home/ikawa/tutorial/seq2seq/corpus/ASPEC-JE/corpus.tok/20000.dict'
-    data = torch.load(data_path)
+    data = torch.load(args.data_path)
     PAD = data['word2index']['src']['<PAD>']
     EOS = data['word2index']['tgt']['<EOS>']
     max_len = data['settings'].max_word_seq_len
@@ -101,36 +103,35 @@ def main():
     src_dict_size = len(data['word2index']['src'])
     tgt_dict_size = len(data['word2index']['tgt'])
     train_data = dataset.PairedDataset(src_data=data['train']['src'], tgt_data=data['train']['tgt'])
-    train_loader = DataLoader(train_data, batch_size=batch_size, collate_fn=dataset.paired_collate_fn, shuffle=True)
+    train_loader = DataLoader(train_data, batch_size=args.batch_size, collate_fn=dataset.paired_collate_fn, shuffle=True)
     valid_data = dataset.SingleDataset(src_data=data['valid']['src'])
-    valid_loader = DataLoader(valid_data, batch_size=batch_size, collate_fn=dataset.collate_fn, shuffle=False)
+    valid_loader = DataLoader(valid_data, batch_size=args.batch_size, collate_fn=dataset.collate_fn, shuffle=False)
     valid_tgt_word_data = data['valid']['tgt_word']
     valid_word_data = []
     for sentence in valid_tgt_word_data:
         valid_word_data.append([sentence[:-1]])
 
     # 設定
-    encoder = models.EncoderLSTM(PAD, hidden_size, src_dict_size).to(device)
-    decoder = models.DecoderLSTM(PAD, hidden_size, tgt_dict_size).to(device)
-    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
-    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
+    encoder = models.EncoderLSTM(PAD, args.hidden_size, src_dict_size).to(device)
+    decoder = models.DecoderLSTM(PAD, args.hidden_size, tgt_dict_size).to(device)
+    encoder_optimizer = optim.SGD(encoder.parameters(), lr=args.learning_rate)
+    decoder_optimizer = optim.SGD(decoder.parameters(), lr=args.learning_rate)
     criterion = nn.NLLLoss(ignore_index=PAD, reduction='sum')
     
     # 学習
-    train(EOS, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, epoch_max,
+    train(EOS, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, args.epoch_size,
           train_loader, valid_loader, valid_word_data, idx2jpn, max_len, device)
     
     # モデル状態の保存
     model_states = {
-        'hidden_size'  : hidden_size,
+        'hidden_size'  : args.hidden_size,
         'src_dict_size': src_dict_size,
         'tgt_dict_size': tgt_dict_size,
         'encoder_state': encoder.state_dict(),
         'decoder_state': decoder.state_dict()
     }
-    model_states_name = 'lstm_model'
-    torch.save(model_states, 'model/{}.pt'.format(model_states_name))
-    print('model_states_name:', model_states_name)
+    torch.save(model_states, 'model/{}.pt'.format(args.model_name))
+    print('model_name:', args.model_name)
 
 
 
