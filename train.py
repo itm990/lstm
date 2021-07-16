@@ -1,4 +1,6 @@
-from argparse import ArgumentParser
+import argparse
+import json
+import os
 import random
 
 import torch
@@ -111,7 +113,7 @@ def train(EOS, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion
 def main():
 
     # パラメータの設定
-    parser = ArgumentParser()
+    parser = argparse.ArgumentParser()
     
     parser.add_argument("--src_dict_path", type=str, default="../corpus/ASPEC-JE/dict/aspec_20k.en-ja.en.dict")
     parser.add_argument("--tgt_dict_path", type=str, default="../corpus/ASPEC-JE/dict/aspec_20k.en-ja.ja.dict")
@@ -126,17 +128,23 @@ def main():
     parser.add_argument("--epoch_size", type=int, default=20)
     parser.add_argument("--hidden_size", type=int, default=256)
     parser.add_argument("--learning_rate", type=float, default=0.01)
-    parser.add_argument("--model_name", type=str, default="model")
+    parser.add_argument("--name", type=str, default="no_name")
     parser.add_argument("--seed", type=int, default=42)
     
-    args = parser.parse_args()    
+    args = parser.parse_args()
+    
+    random.seed(args.seed)
+    torch.manual_seed(args.seed)
     
     # デバイスの設定
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("device:", device)
     
-    random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    # save config file
+    if not os.path.exists("./model/{}".format(args.name)):
+        os.makedirs("./model/{}".format(args.name))
+    with open("./model/{}/config.json".format(args.name), mode="w") as f:
+        json.dump(vars(args), f, separators=(",", ":"), indent=4)
     
     # データのロード
     src_dict_data = torch.load(args.src_dict_path)
@@ -190,14 +198,11 @@ def main():
     
     # モデル状態の保存
     model_states = {
-        'hidden_size'  : args.hidden_size,
-        'src_dict_size': src_dict_size,
-        'tgt_dict_size': tgt_dict_size,
         'encoder_state': encoder.state_dict(),
         'decoder_state': decoder.state_dict()
     }
-    torch.save(model_states, 'model/{}.pt'.format(args.model_name))
-    print('model_name:', args.model_name)
+    torch.save(model_states, './model/{}/model_state.pt'.format(args.name))
+    print('model_name:', args.name)
 
 
 
