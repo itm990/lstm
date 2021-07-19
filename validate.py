@@ -58,7 +58,7 @@ def validate(BOS, EOS, encoder, decoder, valid_loader, valid_word_data, dictiona
         for words in batch_words:
             output_sentences.append(words)
 
-        pbar.set_description('[validation]')
+        pbar.set_description("[validation]")
         
     return nltk.translate.bleu_score.corpus_bleu(valid_word_data, output_sentences) * 100
     

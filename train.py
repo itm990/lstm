@@ -46,7 +46,7 @@ def convert_word_to_idx(word_list, word2index):
 def train(BOS, EOS, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, epoch_size,
           train_loader, valid_loader, valid_word_data, dictionary, max_len, device):
 
-    print('start training.')
+    print("start training.")
     
     for epoch in range(epoch_size):
 
@@ -99,12 +99,12 @@ def train(BOS, EOS, encoder, decoder, encoder_optimizer, decoder_optimizer, crit
             encoder_optimizer.step()
             decoder_optimizer.step()
             
-            pbar.set_description('[epoch:%d] loss:%f' % (epoch+1, total_loss/(i+1)))
+            pbar.set_description("[epoch:%d] loss:%f" % (epoch+1, total_loss/(i+1)))
 
         bleu = validate.validate(BOS, EOS, encoder, decoder, valid_loader, valid_word_data, dictionary, max_len, device)
-        print('BLEU:', bleu)
+        print("BLEU:", bleu)
 
-    print('Fin.')
+    print("Fin.")
 
 
 
@@ -189,7 +189,7 @@ def main():
     decoder = models.DecoderLSTM(PAD, args.hidden_size, tgt_dict_size).to(device)
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=args.learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=args.learning_rate)
-    criterion = nn.NLLLoss(ignore_index=PAD, reduction='sum')
+    criterion = nn.NLLLoss(ignore_index=PAD, reduction="sum")
     
     # 学習
     train(BOS, EOS, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, args.epoch_size,
@@ -197,13 +197,13 @@ def main():
     
     # モデル状態の保存
     model_states = {
-        'encoder_state': encoder.state_dict(),
-        'decoder_state': decoder.state_dict()
+        "encoder_state": encoder.state_dict(),
+        "decoder_state": decoder.state_dict()
     }
-    torch.save(model_states, './model/{}/model_state.pt'.format(args.name))
-    print('model_name:', args.name)
+    torch.save(model_states, "./model/{}/model_state.pt".format(args.name))
+    print("model_name:", args.name)
 
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
