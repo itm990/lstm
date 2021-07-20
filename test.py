@@ -7,9 +7,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+from tqdm import tqdm
 import models
 import dataset
-from tqdm import tqdm
 from train import load_sentences, convert_sent_to_word, convert_word_to_idx
 
 
@@ -83,7 +83,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     
-    parser.add_argument("--src_eval_path", type=str, default="../corpus/ASPEC-JE/corpus.tok/test.en")
+    parser.add_argument("--src_eval_path", type=str, default=None)
     
     parser.add_argument("--batch_size", type=int, default=50)
     parser.add_argument("model_name", type=str)
@@ -134,7 +134,7 @@ def main():
     decoder.load_state_dict(model_states["decoder_state"])
     
     # 文生成
-    test(BOS, EOS, encoder, decoder, eval_loader, idx2tgt, config.max_length,  "./output.tok", device)
+    test(BOS, EOS, encoder, decoder, eval_loader, idx2tgt, config.max_length,  "./{}.tok", device)
 
 
 

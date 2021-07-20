@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import json
 import os
 import random
@@ -8,8 +9,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-import dataset
 from tqdm import tqdm
+import dataset
 import models
 import validate
 
@@ -109,16 +110,18 @@ def train(BOS, EOS, encoder, decoder, encoder_optimizer, decoder_optimizer, crit
 
 
 def main():
-
+    
+    datetime_str = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    
     # パラメータの設定
     parser = argparse.ArgumentParser()
     
-    parser.add_argument("--src_dict_path", type=str, default="../corpus/ASPEC-JE/dict/aspec_20k.en-ja.en.dict")
-    parser.add_argument("--tgt_dict_path", type=str, default="../corpus/ASPEC-JE/dict/aspec_20k.en-ja.ja.dict")
-    parser.add_argument("--src_train_path", type=str, default="../corpus/ASPEC-JE/corpus.tok/train-1.en")
-    parser.add_argument("--tgt_train_path", type=str, default="../corpus/ASPEC-JE/corpus.tok/train-1.ja")
-    parser.add_argument("--src_valid_path", type=str, default="../corpus/ASPEC-JE/corpus.tok/dev.en")
-    parser.add_argument("--tgt_valid_path", type=str, default="../corpus/ASPEC-JE/corpus.tok/dev.ja")
+    parser.add_argument("--src_dict_path", type=str, default=None)
+    parser.add_argument("--tgt_dict_path", type=str, default=None)
+    parser.add_argument("--src_train_path", type=str, default=None)
+    parser.add_argument("--tgt_train_path", type=str, default=None)
+    parser.add_argument("--src_valid_path", type=str, default=None)
+    parser.add_argument("--tgt_valid_path", type=str, default=None)
     parser.add_argument("--sentence_num", type=int, default=20000)
     parser.add_argument("--max_length", type=int, default=50)
     
@@ -139,9 +142,10 @@ def main():
     print("device:", device)
     
     # save config file
-    if not os.path.exists("./model/{}".format(args.name)):
-        os.makedirs("./model/{}".format(args.name))
-    with open("./model/{}/config.json".format(args.name), mode="w") as f:
+    save_dir = "./model/{}_{}".format(args.name, datetime_str) if args.name != "no_name" else "./model/no_name"
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    with open("{}/config.json".format(save_dir), mode="w") as f:
         json.dump(vars(args), f, separators=(",", ":"), indent=4)
     
     # データのロード
@@ -200,7 +204,7 @@ def main():
         "encoder_state": encoder.state_dict(),
         "decoder_state": decoder.state_dict()
     }
-    torch.save(model_states, "./model/{}/model_state.pt".format(args.name))
+    torch.save(model_states, "{}/model_state.pt".format(save_dir))
     print("model_name:", args.name)
 
 

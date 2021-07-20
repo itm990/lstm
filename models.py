@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 # Encoder
 class EncoderLSTM(nn.Module):
     def __init__(self, PAD, hidden_size, dict_size):
