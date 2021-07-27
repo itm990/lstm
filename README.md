@@ -7,6 +7,8 @@ LSTMを使用した機械翻訳モデル
 
 - Python 3.7.3
 - PyTorch 1.6.0
+- tqdm 4.56.0
+- nltk 3.4.3
 
 ## 使用方法
 
@@ -26,12 +28,12 @@ $ train.py \
     --hidden_size 256 \
     --learning_rate 0.01 \
     --name [model name] \
-    --seed 42 \
+    --seed 42
 ```
 
-- 評価
+- 翻訳
 ```
-$ eval.py \
+$ test.py \
     [model name]/model_state.pt \
     --src_eval_path [source evaluation data] \
     --batch_size 50 \
