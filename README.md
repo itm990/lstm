@@ -1,7 +1,9 @@
-# LSTMを使用した機械翻訳モデル
+# LSTM
+
 ## 説明
 
-LSTMを使用した機械翻訳モデル
+LSTMを使用した機械翻訳モデルです．
+原言語文から目的言語文への系列変換の学習，翻訳を行います．
 
 ## 要件
 
@@ -13,10 +15,11 @@ LSTMを使用した機械翻訳モデル
 ## 使用方法
 
 - 学習
+
 ```
 $ train.py \
-    --src_vocab_path [source vocabulary] \
-    --tgt_vocab_path [target vocabulary] \
+    --src_vocab_path [source vocabulary data] \
+    --tgt_vocab_path [target vocabulary data] \
     --src_train_path [source train data] \
     --tgt_train_path [target train data] \
     --src_valid_path [source validation data] \
@@ -32,6 +35,7 @@ $ train.py \
 ```
 
 - 翻訳
+
 ```
 $ test.py \
     [model name]/model_state.pt \
